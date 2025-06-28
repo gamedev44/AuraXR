@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraXR :: Initializing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Aldrich&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00ffcc;
+            --bg-color: #020404;
+        }
+        body {
+            font-family: 'Aldrich', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        #loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 90vw;
+            max-width: 600px;
+            text-align: center;
+            position: relative;
+        }
+
+        #logo-wrapper {
+            position: absolute;
+            opacity: 0;
+            /* Will be animated by JS */
+        }
+
+        .enter-active {
+            animation: bounce-in 4.5s forwards cubic-bezier(0.5, 0, 0.5, 1);
+        }
+        
+        @keyframes bounce-in {
+            0% {
+                opacity: 0.5;
+                transform: translate(-40vw, -40vh) scale(0.5) rotate(0deg);
+            }
+            25% {
+                opacity: 1;
+                transform: translate(40vw, -35vh) scale(0.6) rotate(90deg);
+            }
+            50% {
+                transform: translate(-35vw, 40vh) scale(0.7) rotate(180deg);
+            }
+            75% {
+                transform: translate(35vw, 35vh) scale(0.8) rotate(270deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1) rotate(360deg);
+            }
+        }
+        
+        .settle-and-grow {
+            /* This animation now makes the logo larger */
+            animation: settle-and-grow-anim 2s forwards ease-in-out;
+        }
+
+        @keyframes settle-and-grow-anim {
+            0% { transform: scale(1); }
+            85% { transform: scale(4.9); } /* Larger overshoot for effect */
+            100% { transform: scale(4.5); }   /* Settle at 4.5x size */
+        }
+
+
+        .exit-active {
+            animation: grow-out-fade 3s forwards ease-in; 
+        }
+
+        @keyframes grow-out-fade {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(15); }
+        }
+
+        #logo {
+            width: 180px;
+            height: 180px;
+            animation: ethereal-pulse 5s infinite ease-in-out;
+        }
+
+        @keyframes ethereal-pulse {
+            0%, 100% { filter: drop-shadow(0 0 10px var(--primary-color)) brightness(1); }
+            50% { filter: drop-shadow(0 0 20px var(--primary-color)) brightness(1.2); }
+        }
+        
+        #text-wrapper {
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out; /* Slower fade-in */
+            padding-top: 450px; /* Adjusted for the new larger logo size */
+        }
+
+        #status-text {
+            margin-top: 1.5rem;
+            height: 2em; /* Reserve space */
+            font-size: 1.25rem;
+            min-width: 400px;
+        }
+
+        .status-line {
+            opacity: 0;
+            animation: whisper-fade 4s forwards ease-in-out; /* SLOWER ANIMATION */
+        }
+
+        @keyframes whisper-fade {
+            0% { opacity: 0; filter: blur(5px); transform: translateY(10px); }
+            25%, 75% { opacity: 1; filter: blur(0); transform: translateY(0); }
+            100% { opacity: 0; filter: blur(5px) transform: translateY(-10px); }
+        }
+
+    </style>
+</head>
+<body>
+    <div id="loader-container">
+        <div id="logo-wrapper">
+             <img id="logo" src="https://i.ibb.co/dsMnCzst/image-2025-06-28-003102160.png" alt="AuraXR Logo">
+        </div>
+       
+        <div id="text-wrapper">
+            <!-- The H1 AuraXR title has been removed -->
+            <div id="status-text">
+                <!-- Status lines will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loaderContainer = document.getElementById('loader-container');
+            const logoWrapper = document.getElementById('logo-wrapper');
+            const logo = document.getElementById('logo');
+            const textWrapper = document.getElementById('text-wrapper');
+            const statusContainer = document.getElementById('status-text');
+
+            const bootSequence = [
+                "ESTABLISHING PSYCHOMETRIC LINK...",
+                "CALIBRATING SPECTRAL SENSORS...",
+                "DECRYPTING RESIDUAL ENERGY SIGNATURES...",
+                "ANALYZING AMBIENT EMF...",
+                "AWAKENING MACHINE SPIRIT...",
+                "AURA XR INITIALIZED."
+            ];
+
+            // --- Main Flow Control ---
+            // 1. Start the logo bouncing animation
+            logoWrapper.classList.add('enter-active');
+
+            // 2. After the bouncing animation, settle the logo and start text sequence
+            setTimeout(() => {
+                // Settle and grow logo to its new larger size
+                logo.classList.add('settle-and-grow');
+                
+                // Fade in the text wrapper immediately
+                textWrapper.style.opacity = '1';
+                // Start the boot sequence immediately
+                startBootSequence();
+
+            }, 4500); // This timer MUST match the `bounce-in` animation duration (4.5s)
+
+            function startBootSequence() {
+                let currentStep = 0;
+                // This value controls the time BETWEEN text lines.
+                const stepDuration = 4200; // SLOWER TEXT CYCLE
+
+                function showNextStatus() {
+                    if (currentStep < bootSequence.length) {
+                        statusContainer.innerHTML = `<span class="status-line">${bootSequence[currentStep]}</span>`;
+                        currentStep++;
+                    } else {
+                        // 3. Sequence finished.
+                        clearInterval(sequenceInterval);
+                        
+                        // Wait for a moment so the "INITIALIZED" text can be read
+                        setTimeout(() => {
+                            // Start exit animation on the whole container
+                            loaderContainer.classList.add('exit-active');
+                            
+                            // Redirect after exit animation completes
+                            setTimeout(() => {
+                                window.location.href = 'app.html';
+                            }, 3000); // Match `grow-out-fade` duration
+                        }, 2000); // Pause for 2 seconds before fading out
+                    }
+                }
+                const sequenceInterval = setInterval(showNextStatus, stepDuration);
+                showNextStatus(); // Show the first message immediately
+            }
+        });
+    </script>
+</body>
+</html>
